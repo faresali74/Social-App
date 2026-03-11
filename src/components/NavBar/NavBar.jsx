@@ -1,5 +1,5 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
-import { NavLink, Link, useNavigate } from "react-router-dom";
+import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import {
   FaHome,
   FaUser,
@@ -7,20 +7,37 @@ import {
   FaBars,
   FaCog,
   FaSignOutAlt,
+  FaChevronDown,
 } from "react-icons/fa";
+import { HiOutlineNewspaper, HiOutlineSparkles } from "react-icons/hi2";
+import { FiGlobe, FiBookmark } from "react-icons/fi";
 import img from "../../assets/Images/FavIcon/route.png";
 import { UserContext } from "../../App";
 
 export default function Navbar() {
   const { userData, setUserData } = useContext(UserContext);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isFeedOpen, setIsFeedOpen] = useState(false);
   const navigate = useNavigate();
-  const menuRef = useRef();
+  const location = useLocation();
+  const userMenuRef = useRef();
+  const feedDropDownRef = useRef();
 
+  // Paths for the Feed dropdown to check active state
+  const feedPaths = ["/", "/MyPosts", "/Comunity", "/Saved"];
+  const isFeedActive = feedPaths.includes(location.pathname);
+
+  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setIsOpen(false);
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
+      if (
+        feedDropDownRef.current &&
+        !feedDropDownRef.current.contains(event.target)
+      ) {
+        setIsFeedOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -49,11 +66,12 @@ export default function Navbar() {
         </div>
 
         {/* Navigation Links */}
-        <nav className="flex min-w-0 items-center gap-1 overflow-x-auto rounded-2xl border border-slate-200 bg-slate-50/90 px-1 py-1 sm:px-1.5">
+        <nav className="flex items-center gap-1 rounded-2xl border border-slate-200 bg-slate-50/90 px-1 py-1 sm:px-1.5">
+          {/* 1. Desktop Feed NavLink (Visible on md+ only) */}
           <NavLink
             to="/"
             className={({ isActive }) =>
-              `relative flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-sm font-extrabold transition sm:gap-2 sm:px-3.5 ${
+              `hidden md:flex relative items-center gap-1.5 rounded-xl px-2.5 py-2 text-sm font-extrabold transition sm:gap-2 sm:px-3.5 ${
                 isActive
                   ? "bg-white text-[#1f6fe5] shadow-sm"
                   : "text-slate-600 hover:bg-white/90 hover:text-slate-900"
@@ -61,16 +79,103 @@ export default function Navbar() {
             }
           >
             <FaHome size={20} />
-            <span className="hidden sm:inline">Feed</span>
+            <span>Feed</span>
           </NavLink>
 
+          {/* 2. Mobile Feed Dropdown (Visible below md only) */}
+          <div className="relative md:hidden" ref={feedDropDownRef}>
+            <button
+              onClick={() => setIsFeedOpen(!isFeedOpen)}
+              className={`relative flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-sm font-extrabold transition sm:gap-2 sm:px-3.5 ${
+                isFeedActive
+                  ? "bg-white text-[#1f6fe5] shadow-sm"
+                  : "text-slate-600 hover:bg-white/90"
+              }`}
+            >
+              <FaHome size={20} />
+              <span className="sm:inline">Feed</span>
+              <FaChevronDown
+                size={12}
+                className={`transition-transform duration-200 ${
+                  isFeedOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {/* Dropdown Menu - Positioned Absolute with High Z-Index */}
+            {isFeedOpen && (
+              <div className="absolute left-0 top-full mt-2 w-48 rounded-2xl bg-white shadow-2xl ring-1 ring-black ring-opacity-10 z-[100] border border-slate-100 py-2 overflow-hidden">
+                <NavLink
+                  to="/"
+                  onClick={() => setIsFeedOpen(false)}
+                  className={({ isActive }) =>
+                    `group flex items-center px-4 py-3 text-sm transition-colors ${
+                      isActive
+                        ? "bg-slate-100 text-[#1f6fe5]"
+                        : "text-slate-700 hover:bg-slate-50"
+                    }`
+                  }
+                >
+                  <HiOutlineNewspaper className="mr-3 text-slate-400 group-hover:text-blue-500" />
+                  Feed
+                </NavLink>
+
+                <NavLink
+                  to="/MyPosts"
+                  onClick={() => setIsFeedOpen(false)}
+                  className={({ isActive }) =>
+                    `group flex items-center px-4 py-3 text-sm transition-colors ${
+                      isActive
+                        ? "bg-slate-100 text-[#1f6fe5]"
+                        : "text-slate-700 hover:bg-slate-50"
+                    }`
+                  }
+                >
+                  <HiOutlineSparkles className="mr-3 text-slate-400 group-hover:text-blue-500" />
+                  My Posts
+                </NavLink>
+
+                <NavLink
+                  to="/Comunity"
+                  onClick={() => setIsFeedOpen(false)}
+                  className={({ isActive }) =>
+                    `group flex items-center px-4 py-3 text-sm transition-colors ${
+                      isActive
+                        ? "bg-slate-100 text-[#1f6fe5]"
+                        : "text-slate-700 hover:bg-slate-50"
+                    }`
+                  }
+                >
+                  <FiGlobe className="mr-3 text-slate-400 group-hover:text-blue-500" />
+                  Community
+                </NavLink>
+
+                <NavLink
+                  to="/Saved"
+                  onClick={() => setIsFeedOpen(false)}
+                  className={({ isActive }) =>
+                    `group flex items-center px-4 py-3 text-sm transition-colors ${
+                      isActive
+                        ? "bg-slate-100 text-[#1f6fe5]"
+                        : "text-slate-700 hover:bg-slate-50"
+                    }`
+                  }
+                >
+                  <FiBookmark className="mr-3 text-slate-400 group-hover:text-blue-500" />
+                  Saved
+                </NavLink>
+              </div>
+            )}
+          </div>
+
+          {/* Profile Link */}
           <NavLink
             to="/profile"
             className={({ isActive }) =>
               `relative flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-sm font-extrabold transition sm:gap-2 sm:px-3.5 ${
                 isActive
                   ? "bg-white text-[#1f6fe5] shadow-sm"
-                  : "text-slate-600 hover:bg-white/90 hover:text-slate-900"
+                  : "text-slate-600 hover:bg-white/90"
               }`
             }
           >
@@ -78,13 +183,14 @@ export default function Navbar() {
             <span className="hidden sm:inline">Profile</span>
           </NavLink>
 
+          {/* Notifications Link */}
           <NavLink
             to="/notifications"
             className={({ isActive }) =>
               `relative flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-sm font-extrabold transition sm:gap-2 sm:px-3.5 ${
                 isActive
                   ? "bg-white text-[#1f6fe5] shadow-sm"
-                  : "text-slate-600 hover:bg-white/90 hover:text-slate-900"
+                  : "text-slate-600 hover:bg-white/90"
               }`
             }
           >
@@ -93,10 +199,10 @@ export default function Navbar() {
           </NavLink>
         </nav>
 
-        {/* User Menu Button */}
-        <div className="relative" ref={menuRef}>
+        {/* User Profile Menu Section */}
+        <div className="relative" ref={userMenuRef}>
           <button
-            onClick={() => setIsOpen(!isOpen)}
+            onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
             className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-2 py-1.5 transition hover:bg-slate-100"
           >
             <img
@@ -113,12 +219,12 @@ export default function Navbar() {
             <FaBars className="text-slate-500" size={14} />
           </button>
 
-          {isOpen && (
-            <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-2xl bg-white shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none z-50 overflow-hidden border border-slate-100">
+          {isUserMenuOpen && (
+            <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-2xl bg-white shadow-xl z-50 overflow-hidden border border-slate-100">
               <div className="py-2">
                 <Link
                   to="/profile"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => setIsUserMenuOpen(false)}
                   className="group flex items-center px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                 >
                   <FaUser className="mr-3 text-slate-400 group-hover:text-blue-500" />
@@ -127,7 +233,7 @@ export default function Navbar() {
 
                 <Link
                   to="/settings"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => setIsUserMenuOpen(false)}
                   className="group flex items-center px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                 >
                   <FaCog className="mr-3 text-slate-400 group-hover:text-blue-500" />
